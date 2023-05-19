@@ -1,28 +1,21 @@
 const WebSocket = require('ws');
-const express = require('express');
 
 const websocketURL = 'wss://ws-feed.exchange.coinbase.com'; // Coinbase WebSocket URL for the public feed
-
-const app = express();
-const port = 8080;
+const pollingURL = 'ws://localhost:8080' // Local port feed to read from
 
 // Create a WebSocket connection
 const ws = new WebSocket(websocketURL);
+const ps = new WebSocket(pollingURL)
 
 // Trading pairs map
+// Can add additional pairs as desired
 const tradingPairs = {
   'BTC-USD': {
     name: 'BTC-USD',
     bids: new Map(),
     asks: new Map(),
     ticker: null
-  },
-  'ETH-USD': {
-    name: 'ETH-USD',
-    bids: new Map(),
-    asks: new Map(),
-    ticker: null
-  },
+  }
 };
 
 // Event: Connection established
@@ -121,13 +114,5 @@ function emitOrderBookData() {
       ticker: tradingPair.ticker
     };
   }
-  // Emit the order book data to the specific URL
-  app.get('/orderbook', (req, res) => {
-    res.json(orderBookData);
-  });
+  ps.send(JSON.stringify(orderBookData))
 }
-
-// Start the HTTP server
-app.listen(port, () => {
-  console.log(`Emitter program listening at http://localhost:${port}`);
-});

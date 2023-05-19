@@ -35,7 +35,7 @@ ws.on('open', () => {
 // Event: Message received
 ws.on('message', (data) => {
   const message = JSON.parse(data);
-
+  
   if (message.type === 'snapshot') {
     const tradingPair = tradingPairs[message.product_id];
 
@@ -56,10 +56,13 @@ ws.on('message', (data) => {
   } else if (message.type === 'l2update') {
     const tradingPair = tradingPairs[message.product_id];
 
+    console.log(message)
+
+    
     // Process bid updates
     message.changes
       .filter(change => change[0] === 'buy')
-      .forEach(([price, volume]) => {
+      .forEach(([trade_type,price, volume]) => {
         if (volume === '0') {
           tradingPair.bids.delete(price);
         } else {
@@ -70,7 +73,7 @@ ws.on('message', (data) => {
     // Process ask updates
     message.changes
       .filter(change => change[0] === 'sell')
-      .forEach(([price, volume]) => {
+      .forEach(([trade_type,price, volume]) => {
         if (volume === '0') {
           tradingPair.asks.delete(price);
         } else {

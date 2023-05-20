@@ -51,9 +51,9 @@ ws.on('message', (data) => {
       tradingPair.asks.set(price, volume);
     });
 
-    console.log(tradingPair.bids.size)
     // Emit the order book data
     emitOrderBookData();
+    
   } else if (message.type === 'l2update') {
     const tradingPair = tradingPairs[message.product_id];
     //console.log(message)
@@ -79,8 +79,7 @@ ws.on('message', (data) => {
           tradingPair.asks.set(price, volume);
         }
       });
-    
-    console.log(tradingPair.bids.size)
+
     // Emit the order book data
     emitOrderBookData();
   } else if (message.type === 'ticker') {
@@ -111,6 +110,7 @@ function emitOrderBookData() {
   const orderBookData = {};
   for (const pair in tradingPairs) {
     const tradingPair = tradingPairs[pair];
+    console.log(tradingPair.bids.size)
     orderBookData[tradingPair.name] = {
       bids: [...tradingPair.bids],
       asks: [...tradingPair.asks],

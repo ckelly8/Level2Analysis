@@ -38,7 +38,8 @@ def processOrderBookData(data):
                 bid_entries = []
                 for entries in orderBookData[product][order_type]:
                     bid_entries.append([float(entries[0]),float(entries[1])])
-            
+                
+
             if order_type == 'asks':
                 ask_entries = []
                 for entries in orderBookData[product][order_type]:
@@ -46,7 +47,7 @@ def processOrderBookData(data):
         
         # Values have been added to variables and can now be placed into a product dictionary
         single_product_dictionary = { 'bid_entries': np.array(bid_entries), 'ask_entries': np.array(ask_entries),'ticker': ticker_list}
-        
+        print(single_product_dictionary['bid_entries'][:,0])
         #This can then be added to the full product dictionary to track all trading pairs in real time
         full_product_dictionary[product] = single_product_dictionary
     
@@ -54,7 +55,7 @@ def processOrderBookData(data):
     #btc_asks_com = calculate_center_of_mass(full_product_dictionary['BTC-USD']['ask_entries'])
     #print(btc_bids_com,btc_asks_com)
 
-    print(full_product_dictionary['BTC-USD']['bid_entries'].size, full_product_dictionary['BTC-USD']['ask_entries'].size)
+    #print(full_product_dictionary['BTC-USD']['bid_entries'].size, full_product_dictionary['BTC-USD']['ask_entries'].size)
 
 # ###----- Port Listening -----### #
 

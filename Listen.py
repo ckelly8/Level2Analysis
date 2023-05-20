@@ -49,10 +49,13 @@ def processOrderBookData(data):
         
         #This can then be added to the full product dictionary to track all trading pairs in real time
         full_product_dictionary[product] = single_product_dictionary
-        
-    btc_bids_com = calculate_center_of_mass(full_product_dictionary['BTC-USD']['bid_entries'])
-    print(btc_bids_com)
-        
+    
+    #btc_bids_com = calculate_center_of_mass(full_product_dictionary['BTC-USD']['bid_entries'])
+    #btc_asks_com = calculate_center_of_mass(full_product_dictionary['BTC-USD']['ask_entries'])
+    #print(btc_bids_com,btc_asks_com)
+
+    print(full_product_dictionary['BTC-USD']['bid_entries'].size, full_product_dictionary['BTC-USD']['ask_entries'].size)
+
 # ###----- Port Listening -----### #
 
 async def handle_message(message):
@@ -63,7 +66,7 @@ async def connection_handler(websocket, path):
     async for message in websocket:
         await handle_message(message)
 
-start_server = websockets.serve(connection_handler, 'localhost', 8080, max_size=None)
+start_server = websockets.serve(connection_handler, 'localhost', 8080, max_size=None, ping_interval=None)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

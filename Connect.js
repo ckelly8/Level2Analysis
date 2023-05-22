@@ -12,9 +12,6 @@ const ps = new WebSocket(pollingURL)
 const tradingPairs = {
   'BTC-USD': {
     name: 'BTC-USD',
-    bids: new Map(),
-    asks: new Map(),
-    ticker: null
   }
 };
 
@@ -35,64 +32,7 @@ ws.on('open', () => {
 // Event: Message received
 ws.on('message', (data) => {
   const message = JSON.parse(data);
-  
-  if (message.type === 'snapshot') {
-    const tradingPair = tradingPairs[message.product_id];
-
-    // Clear existing order book data
-    tradingPair.bids.clear();
-    tradingPair.asks.clear();
-
-    // Update with snapshot data
-    message.bids.forEach(([price, volume]) => {
-      tradingPair.bids.set(price, volume);
-    });
-    message.asks.forEach(([price, volume]) => {
-      tradingPair.asks.set(price, volume);
-    });
-
-    // Emit the order book data
-    emitOrderBookData();
-    
-  } else if (message.type === 'l2update') {
-    const tradingPair = tradingPairs[message.product_id];
-    //console.log(message)
-    
-    // Process bid updates
-    message.changes
-      .filter(change => change[0] === 'buy')
-      .forEach(([trade_type,price, volume]) => {
-        if (parseFloat(volume) === 0) {
-          tradingPair.bids.delete(price);
-        } else {
-          tradingPair.bids.set(price, volume);
-        }
-      });
-
-    // Process ask updates
-    message.changes
-      .filter(change => change[0] === 'sell')
-      .forEach(([trade_type,price, volume]) => {
-        if (parseFloat(volume) === 0) {
-          tradingPair.asks.delete(price);
-        } else {
-          tradingPair.asks.set(price, volume);
-        }
-      });
-
-    // Emit the order book data
-    emitOrderBookData();
-  } else if (message.type === 'ticker') {
-    const tradingPair = tradingPairs[message.product_id];
-    tradingPair.ticker = {
-      bid: message.best_bid,
-      ask: message.best_ask,
-      price: message.price,
-      time: message.time
-    };
-    // Emit the order book data
-    emitOrderBookData();
-  }
+  ps.send(JSON.stringify(message))
 });
 
 // Event: Connection closed
@@ -105,17 +45,3 @@ ws.on('error', (error) => {
   console.error('WebSocket error:', error);
 });
 
-// Emit the order book data to a specific URL
-function emitOrderBookData() {
-  const orderBookData = {};
-  for (const pair in tradingPairs) {
-    const tradingPair = tradingPairs[pair];
-    console.log(tradingPair.bids.size)
-    orderBookData[tradingPair.name] = {
-      bids: [...tradingPair.bids],
-      asks: [...tradingPair.asks],
-      ticker: tradingPair.ticker
-    };
-  }
-  ps.send(JSON.stringify(orderBookData))
-}

@@ -23,16 +23,22 @@ class OrderBook:
                 #check if value should be removed from orderbook
                 if float(change[2]) != 0:
                     index = np.searchsorted(self.asks[:, 0], np.float64(change[1]))
-                    print(change,index)
-                    print(self.asks[index-1])
+                    
                     print(self.asks[index])
-                    print(self.asks[index+1])
+                    print(change)
 
-                    self.asks = np.insert(self.asks,index,np.float64(change[1]),axis=0)
-                    print(change,index)
-                    print(self.asks[index-1])
+                    #Value at index already exists. We are updating value.
+                    if np.float64(change[1]) == self.asks[index,0]:
+                        self.asks[index,0] = np.float64(change[1])
+                        self.asks[index,1] = np.float64(change[2])
+                    
+                    #Value at index does not exist. We must insert the new values.
+                    elif np.float64(change[1]) == self.asks[index,0]:
+                        self.asks = np.insert(self.asks,index,[np.float64(change[1]),np.float64(change[2])],axis=0)
+                    #print(change,index)
+                    #print(self.asks[index-1])
                     print(self.asks[index])
-                    print(self.asks[index+1])
+                    #print(self.asks[index+1])
 
 
                 elif float(change[2] == 0):

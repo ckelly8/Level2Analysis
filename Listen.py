@@ -1,9 +1,11 @@
 import json
 import numpy as np
+from timeit import default_timer as timer
 
 # Used to create an orderbook object of product type e.g. BTC-USD or ETH-USD
 class OrderBook:
     def __init__(self, product):
+        self.time = timer()
         self.product = product
         self.asks = np.zeros(10)
         self.bids = np.zeros(10)
@@ -34,7 +36,6 @@ class OrderBook:
                     elif self.asks[index,0] != np.float64(change[1]):
                         self.asks = np.insert(self.asks,index,np.array([np.float64(change[1]),np.float64(change[2])]),axis=0)
     
-
                 # volume value is 0. Remove entry at index.
                 if float(change[2]) == 0:
                     index = np.searchsorted(self.asks[:, 0], np.float64(change[1]))
@@ -91,3 +92,7 @@ class OrderBook:
         if received_data['type'] == 'l2update':
             self.update_orderbook(received_data)
 
+    def check_time(self):
+        check_time = timer()
+        delta_time = int(check_time - self.time)
+        return delta_time

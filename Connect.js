@@ -1,4 +1,6 @@
+// import dependencies
 const WebSocket = require('ws');
+
 
 const ws = new WebSocket('wss://ws-feed.exchange.coinbase.com', {
   perMessageDeflate: true

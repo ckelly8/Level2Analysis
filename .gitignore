@@ -1,3 +1,6 @@
+# Authentication
+authentication/
+
 # Logs
 logs
 *.log

@@ -1,0 +1,40 @@
+{
+  type: 'subscriptions',
+  channels: [
+    { name: 'level2_50', product_ids: [Array] },
+    { name: 'ticker', product_ids: [Array] }
+  ]
+}
+{
+  type: 'snapshot',
+  product_id: 'BTC-USD',
+  asks: [
+    [ '42811.22', '0.21491639' ],
+    [ '42811.23', '0.14750000' ],
+  ],
+  bids: [
+    [ '42806.32', '0.02200000' ],
+    [ '42806.25', '0.02000000' ],
+    
+  ],
+  time: '2023-12-29T12:42:15.356241Z'
+}
+{
+  type: 'ticker',
+  sequence: 70421197968,
+  product_id: 'BTC-USD',
+  price: '42804.93',
+  open_24h: '42795.12',
+  volume_24h: '12753.10613141',
+  low_24h: '42135.74',
+  high_24h: '42959.35',
+  volume_30d: '359306.30728248',
+  best_bid: '42802.40',
+  best_bid_size: '0.16950000',
+  best_ask: '42806.71',
+  best_ask_size: '0.07687249',
+  side: 'buy',
+  time: '2023-12-29T12:42:14.105055Z',
+  trade_id: 589510854,
+  last_size: '0.03456195'
+}

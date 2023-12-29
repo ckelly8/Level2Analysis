@@ -1,6 +1,10 @@
 # Authentication
 authentication/
 
+# Batch files for testing
+*.bat
+
+
 # Logs
 logs
 *.log

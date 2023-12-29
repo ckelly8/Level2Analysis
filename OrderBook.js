@@ -2,29 +2,37 @@
 class OrderBook{
     constructor(product_id){
         this.product_id = product_id;
+        this.asks = new Array();
+        this.bids = new Array();
+        this.ticker = {};
     }
 
     //Expects incoming websocket data parsed into JSON format 
     readDataStream(data){
-        // Need to separate Ticker, Snapshot, and l2update data messages
-        //console.log(data);
+        //Take snapshot data and initialize orderbook
         if (data.type == 'snapshot'){
-            //console.log(data);
+            this.asks = data.asks.map(row => {
+                return row.map(parseFloat);
+            });
+            this.bids = data.bids.map(row => {
+                return row.map(parseFloat);
+            });
         }
+        //Update orderbook 
         if (data.type == 'l2update'){
-            //console.log(data);
+            console.log(data);
         }
+        //Maintain only most recent ticker
         if (data.type == 'ticker'){
-            //console.log(data);
+            this.ticker = data;
         }
     }
 
-    initializeOrderBook(data){
-        
-    }
-
+    //Display metrics about the orderbook
     displayOrderBook(){
-        console.log();
+        console.log(this.ticker);
+        console.log(this.asks);
+        console.log(this.bids);
     }
 
 }

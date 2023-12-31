@@ -5,6 +5,7 @@ class OrderBook{
         this.asks = new Array();
         this.bids = new Array();
         this.ticker = {};
+        this.updateNum = 0;
     }
 
     //Expects incoming websocket data parsed into JSON format 
@@ -31,58 +32,169 @@ class OrderBook{
         }
     }
 
+    // Restructuring the update message to split buy and sell into separate arrays 
+    // and change data type to float
+    restructureUpdateData(updateData){
+        function quickSort2DArray(array) {
+            array.sort((a, b) => {
+                return a[0] - b[0];
+            });
+        }
+
+        let bidsUpdate = new Array();
+        let asksUpdate = new Array();
+
+        for(let i = 0; i < updateData.length; i++){
+            if(updateData[i][0] == 'buy'){
+                bidsUpdate.push([parseFloat(updateData[i][1]),parseFloat(updateData[i][2])])
+            }
+            if(updateData[i][0] == 'sell'){
+                asksUpdate.push([parseFloat(updateData[i][1]),parseFloat(updateData[i][2])])
+            }
+        }
+        
+        // Sorting updates as they are not guaranteed to be sorted already
+        quickSort2DArray(bidsUpdate);
+        quickSort2DArray(asksUpdate);
+
+        //reversing bids update data to match format of greatest to least from snapshot
+        bidsUpdate.reverse();
+
+        return {bidsUpdate, asksUpdate};
+    }
+
+    
+
     updateOrderBook(data){
+        this.updateNum += 1; // debugging delete later
         let newBids = new Array();
         let newAsks = new Array();
 
+        let updateData = this.restructureUpdateData(data.changes);
+        let bidsUpdate = updateData.bidsUpdate;
+        let asksUpdate = updateData.asksUpdate;
+
+
+        let zero_flag = false;
+        // Merging update array and existing orderbook bid array
+        // using modified merge step of merge sort to merge two sorted arrays
         let i1 = 0, i2 = 0;
-        while(i1 < this.bids.length && i2 < Object.keys(data.changes).length){
-            if(data.changes[i2][0] == 'sell'){
-                break;
+        while(i1 < this.bids.length && i2 < bidsUpdate.length){
+
+            // case where update value is zero volume and greater price. No match will be found.
+            // ignore value and continue
+            if(bidsUpdate[i2][1] == 0 && bidsUpdate[i2][0] > this.bids[i1][0]){
+                console.log('update value with no match ' + bidsUpdate[i2]);
+                i2++;
+                continue;
             }
-            let changesArr = [parseFloat(data.changes[i2][1]),parseFloat(data.changes[i2][2])];
 
-            console.log('i1 = ' + i1 + ' i2 = ' + i2);
-            console.log('bids = ' + this.bids[i1]);
-            console.log('changes = ' + data.changes);
+            // if prices match - remove if 0 and update if > 0 
+            if(this.bids[i1][0] == bidsUpdate[i2][0]){
 
-            if(this.bids[i1][0] == data.changes[i2][1]){
                 // if volume is zero, don't include value in array
-                
-                if(changesArr[1] == 0){
-                    console.log('Removing Value ' + changesArr[1]);
+                if(bidsUpdate[i2][1] == 0){
+                    //console.log('Removing Value ' + bidsUpdate[i2]);
                     i1++;
                     i2++;
-                    continue;
                 }
-                newBids.push(changesArr);
-                i1++;
-                i2++;
-                continue;
+                else if(bidsUpdate[i2][1] != 0){
+                    //console.log('replacing value ' + bidsUpdate[i2])
+                    newBids.push(bidsUpdate[i2]);
+                    i1++;
+                    i2++;
+                }
             }
 
-
-            if(this.bids[i1][0] < changesArr[0]){
+            else if(this.bids[i1][0] > bidsUpdate[i2][0]){
                 newBids.push(this.bids[i1]);
                 i1++;
-                continue;
             }
-            if(this.bids[i1][0] > changesArr[0]){
-                newBids.push(changesArr);
+            else if(this.bids[i1][0] < bidsUpdate[i2][0]){
+                newBids.push(bidsUpdate[i2]);
+                i2++;
+            }
+        }
+       
+        // Push remaining data from the array not fully traversed
+        while(i1 < this.bids.length){
+            newBids.push(this.bids[i1]);
+            i1++;
+        }
+        while(i2 < bidsUpdate.length){
+            newBids.push(bidsUpdate[i2]);
+            i2++;
+        }
+
+        i1 = 0, i2 = 0;
+        while(i1 < this.asks.length && i2 < asksUpdate.length){
+
+            // case where update value is zero volume and lesser price. No match will be found.
+            // ignore value and continue
+            if(asksUpdate[i2][1] == 0 && asksUpdate[i2][0] < this.asks[i1][0]){
+                console.log('update value with no match ' + asksUpdate[i2]);
                 i2++;
                 continue;
             }
 
+            // if prices match - remove if 0 and update if > 0 
+            if(this.asks[i1][0] == asksUpdate[i2][0]){
+
+                // if volume is zero, don't include value in array
+                if(asksUpdate[i2][1] == 0){
+                    //console.log('Removing Value ' + bidsUpdate[i2]);
+                    i1++;
+                    i2++;
+                }
+                else if(asksUpdate[i2][1] != 0){
+                    //console.log('replacing value ' + bidsUpdate[i2])
+                    newAsks.push(asksUpdate[i2]);
+                    i1++;
+                    i2++;
+                }
+            }
+
+            else if(this.asks[i1][0] < asksUpdate[i2][0]){
+                newAsks.push(this.asks[i1]);
+                i1++;
+            }
+            else if(this.asks[i1][0] > asksUpdate[i2][0]){
+                newAsks.push(asksUpdate[i2]);
+                i2++;
+            }
+        }
+        // Push remaining data from the array not fully traversed
+        while(i1 < this.asks.length){
+            newAsks.push(this.asks[i1]);
+            i1++;
+        }
+        while(i2 < asksUpdate.length){
+            newAsks.push(asksUpdate[i2]);
+            i2++;
         }
 
-        i1 = 0;
-        while(i1 < this.asks.length && i2 < Object.keys(data.changes).length){
-            break;
+        console.log(this.updateNum);
+
+        // debugging. delete later.
+        for(let i = 0; i < this.bids.length; i++){
+            if(this.bids[i][1] == 0){
+                zero_flag = true;
+            }
         }
-        
-        //this.bids = newBids;
-        //this.asks = newAsks;
-        // Make sure all values from all arrays have been pushed to new arrays
+        for(let i = 0; i < this.asks.length; i++){
+            if(this.asks[i][1] == 0){
+                zero_flag = true;
+            }
+        }
+
+        this.bids = newBids;
+        this.asks = newAsks;
+    
+        if(zero_flag == true){
+            process.exit();
+        }
+        console.log(this.bids);
+        console.log(this.asks);
     }
 
     //Display metrics about the orderbook

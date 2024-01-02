@@ -5,7 +5,21 @@ class OrderBook{
         this.asks = new Array();
         this.bids = new Array();
         this.ticker = {};
-        this.updateNum = 0;
+        this.recordValues = {
+            tickerPrice : null,
+            totalCOM : null,
+            fullBidCOM : null,
+            fullAskCOM : null,
+            combined10COM : null,
+            bid10COM : null,
+            ask10COM : null,
+            combined50COM : null,
+            bid50COM : null,
+            ask50COM : null,
+            coombined100COM : null,
+            bid100COM : null,
+            ask100COM : null,
+        };
     }
 
     //Expects incoming websocket data parsed into JSON format 
@@ -63,10 +77,7 @@ class OrderBook{
         return {bidsUpdate, asksUpdate};
     }
 
-    
-
     updateOrderBook(data){
-        this.updateNum += 1; // debugging delete later
         let newBids = new Array();
         let newAsks = new Array();
 
@@ -74,8 +85,13 @@ class OrderBook{
         let bidsUpdate = updateData.bidsUpdate;
         let asksUpdate = updateData.asksUpdate;
 
+        // track sum used for center of mass 
+        // using in build process to reduce number of loops
+        let volumeSum = 0;
+        let initPrice = 0;
+        let finalPrice = 0;
+        let volumeCount = 0;
 
-        let zero_flag = false;
         // Merging update array and existing orderbook bid array
         // using modified merge step of merge sort to merge two sorted arrays
         let i1 = 0, i2 = 0;
@@ -84,7 +100,7 @@ class OrderBook{
             // case where update value is zero volume and greater price. No match will be found.
             // ignore value and continue
             if(bidsUpdate[i2][1] == 0 && bidsUpdate[i2][0] > this.bids[i1][0]){
-                console.log('update value with no match ' + bidsUpdate[i2]);
+                //console.log('update value with no match ' + bidsUpdate[i2]);
                 i2++;
                 continue;
             }
@@ -101,6 +117,8 @@ class OrderBook{
                 else if(bidsUpdate[i2][1] != 0){
                     //console.log('replacing value ' + bidsUpdate[i2])
                     newBids.push(bidsUpdate[i2]);
+                    volumeSum += bidsUpdate[i2][1];
+                    volumeCount++;
                     i1++;
                     i2++;
                 }
@@ -108,23 +126,34 @@ class OrderBook{
 
             else if(this.bids[i1][0] > bidsUpdate[i2][0]){
                 newBids.push(this.bids[i1]);
+                volumeSum += this.bids[i1][1];
+                volumeCount++;
                 i1++;
             }
             else if(this.bids[i1][0] < bidsUpdate[i2][0]){
                 newBids.push(bidsUpdate[i2]);
+                volumeSum += bidsUpdate[i2][1];
+                volumeCount++;
                 i2++;
             }
+            this.checkVolume(volumeCount);
         }
        
         // Push remaining data from the array not fully traversed
         while(i1 < this.bids.length){
             newBids.push(this.bids[i1]);
+            volumeSum += this.bids[i2][1];
+            volumeCount++;
             i1++;
         }
         while(i2 < bidsUpdate.length){
             newBids.push(bidsUpdate[i2]);
+            volumeSum += bidsUpdate[i2][1];
+            volumeCount++;
             i2++;
         }
+
+        this.totalCOM = findTotalCOM();
 
         i1 = 0, i2 = 0;
         while(i1 < this.asks.length && i2 < asksUpdate.length){
@@ -132,7 +161,7 @@ class OrderBook{
             // case where update value is zero volume and lesser price. No match will be found.
             // ignore value and continue
             if(asksUpdate[i2][1] == 0 && asksUpdate[i2][0] < this.asks[i1][0]){
-                console.log('update value with no match ' + asksUpdate[i2]);
+                //console.log('update value with no match ' + asksUpdate[i2]);
                 i2++;
                 continue;
             }
@@ -173,30 +202,40 @@ class OrderBook{
             i2++;
         }
 
-        console.log(this.updateNum);
-
-        // debugging. delete later.
-        for(let i = 0; i < this.bids.length; i++){
-            if(this.bids[i][1] == 0){
-                zero_flag = true;
-            }
-        }
-        for(let i = 0; i < this.asks.length; i++){
-            if(this.asks[i][1] == 0){
-                zero_flag = true;
-            }
-        }
-
         this.bids = newBids;
         this.asks = newAsks;
     
-        if(zero_flag == true){
-            process.exit();
-        }
-        console.log(this.bids);
-        console.log(this.asks);
     }
 
+    recordData(){
+        
+        this.recordValues.tickerPrice = parseFloat(this.ticker.price);
+
+    }
+
+    computeCOM(volumeSum,leastPrice,greatestPrice){
+        //distance along 'linear mass' of orderbook is defined by difference
+        // between least and greatest prices
+
+        // Formula for center of mass for linear mass with discrete masses 
+        // at known positions is: X_cm = sum(m_i*x_i) / sum(m_i)
+
+        let COM = null;
+
+
+    }
+
+    checkVolume(volumeCount){
+        if(volumeCount == 10){
+            this.computeCOM(10);
+        }
+        else if(volumeCount == 50){
+            this.computeCOM(50);
+        }
+        else if(volumeCount == 100){
+            this.computeCOM(100);
+        }
+    }
     //Display metrics about the orderbook
     displayOrderBook(){
         console.log(this.ticker);

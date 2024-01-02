@@ -17,7 +17,7 @@ ws.on('open', function open() {
 
 ws.on('message', function incoming(data) {
   ob.readDataStream(JSON.parse(data));
-  //ob.displayOrderBook();
+  ob.displayOrderBook();
 });
 
 ws.on('error', function error(error) {

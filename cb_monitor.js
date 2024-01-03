@@ -1,4 +1,6 @@
 // import dependencies
+const AnalyzeOrderBook = require('./AnalyzeOrderBook.js');
+
 const WebSocket = require('ws');
 const OrderBook = require('./OrderBook');
 
@@ -17,9 +19,12 @@ ws.on('open', function open() {
 
 ws.on('message', function incoming(data) {
   ob.readDataStream(JSON.parse(data));
-  ob.displayOrderBook();
 });
 
 ws.on('error', function error(error) {
   console.error('WebSocket error:', error);
 });
+
+setInterval(() => {
+  console.log(AnalyzeOrderBook.computeCOM(ob.bids));
+}, 1000);

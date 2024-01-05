@@ -4,22 +4,30 @@ class OrderBookRecordObject{
         this.recordSizeArray = recordSizeArray;
         this.recordObject = {};
     }
-    
 
     initializeRecordObject(){
-        for(let i = 0; i < this.recordSizeArray.length; i++){
-            this.recordObject 
-        }
+        this.recordObject = this.recordSizeArray.reduce((obj, key) => {
+            obj[key] = null;
+            return obj;
+        }, {});
     }
 
+    // Assumes ordered list of values describing the number of bids / asks 
+    // to include in a calculation and the key 'full' at the end to include the full orderbook
     findCOMValues(){
+        let totalSize = this.recordSizeArray[this.recordSizeArray.length-1];;
+        //first check that the ob is initialized and contains values
+        if(!this.OrderBook.asks.length || !this.OrderBook.bids.length){
+            return null;
+        }
+
+        
 
     }
     
-    recordOrderBook(){
+    record(){
 
     }
-
 
 
 }

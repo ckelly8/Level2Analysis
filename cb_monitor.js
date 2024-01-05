@@ -7,6 +7,7 @@ const OrderBookRecordObject = require('./OrderBookRecordObject');
 
 const ob = new OrderBook('BTC-USD');
 recordSizeArray = [10,50,100,250,1000,'full'];
+const recordObject = new OrderBookRecordObject(ob, recordSizeArray);
 
 const ws = new WebSocket('wss://ws-feed.exchange.coinbase.com', {
   perMessageDeflate: true
@@ -28,5 +29,5 @@ ws.on('error', function error(error) {
 });
 
 setInterval(() => {
-  const recordObject = new OrderBookRecordObject(ob, recordSizeArray);
+  recordObject.record(ob);
 }, 1000);

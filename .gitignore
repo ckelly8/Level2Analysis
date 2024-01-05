@@ -4,6 +4,8 @@ authentication/
 # Batch files for testing
 *.bat
 
+# workspaces
+*.code-workspace
 
 # Logs
 logs

@@ -3,8 +3,10 @@ const AnalyzeOrderBook = require('./AnalyzeOrderBook.js');
 
 const WebSocket = require('ws');
 const OrderBook = require('./OrderBook');
+const OrderBookRecordObject = require('./OrderBookRecordObject');
 
 const ob = new OrderBook('BTC-USD');
+recordSizeArray = [10,50,100,250,1000,'full'];
 
 const ws = new WebSocket('wss://ws-feed.exchange.coinbase.com', {
   perMessageDeflate: true
@@ -26,5 +28,5 @@ ws.on('error', function error(error) {
 });
 
 setInterval(() => {
-  console.log(AnalyzeOrderBook.computeCOM(ob.bids));
+  const recordObject = new OrderBookRecordObject(ob, recordSizeArray);
 }, 1000);

@@ -1,14 +1,15 @@
 // import dependencies
-const AnalyzeOrderBook = require('./AnalyzeOrderBook.js');
 
 const WebSocket = require('ws');
 const OrderBook = require('./OrderBook');
 const OrderBookRecordObject = require('./OrderBookRecordObject');
 
+// create objects
 const ob = new OrderBook('BTC-USD');
-recordSizeArray = [10,50,100,250,1000,'full'];
+recordSizeArray = [1,10,50,100,250,500,1000,2500,5000,'full'];
 const recordObject = new OrderBookRecordObject(ob, recordSizeArray);
 
+//connect to websocket
 const ws = new WebSocket('wss://ws-feed.exchange.coinbase.com', {
   perMessageDeflate: true
 });
@@ -20,6 +21,7 @@ ws.on('open', function open() {
   ws.send(subscribeMessage);
 });
 
+//read websocket data
 ws.on('message', function incoming(data) {
   ob.readDataStream(JSON.parse(data));
 });
@@ -28,6 +30,9 @@ ws.on('error', function error(error) {
   console.error('WebSocket error:', error);
 });
 
+//record data after performing computations
 setInterval(() => {
   recordObject.record(ob);
+  recordObject.displayRecordObject();
+  //ob.displayOrderBook();
 }, 1000);

@@ -1,3 +1,7 @@
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
+
 class OrderBookRecordObject{
     constructor(OrderBook,recordSizeArray){
         this.OrderBook = OrderBook;
@@ -101,14 +105,46 @@ class OrderBookRecordObject{
             j++;
         }
     }
+
+    writeToCSV(recordObject) {
+        let folderPath = './data'
+    
+        // Ensure the folder exists
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+        }
+    
+        // Create a file with the current date
+        const date = moment().format('YYYYMMDD');
+        const filename = `${date}.csv`;
+    
+        const filePath = path.join(folderPath, filename);
+    
+        // Check if the file exists
+        if (!fs.existsSync(filePath)) {
+            // Create the file and add a header (if needed)
+            let headers = Object.keys(recordObject).join(',')+'\n';
+            fs.writeFileSync(filePath, headers, 'utf8');
+        }
+    
+        // Append data to the file
+        let writeLine = Object.values(recordObject).join(',')+'\n';
+        fs.appendFileSync(filePath, writeLine, 'utf8');
+    }
+
     appendAdditionalRecords(){
         this.recordObject['price'] = parseFloat(this.OrderBook.ticker['price']);
+        this.recordObject['time'] = new Date().toISOString();
     }
 
     record(OrderBook){
         this.OrderBook = OrderBook;
+        if(this.findCOMValues == null){
+            return;
+        }
         this.findCOMValues();
         this.appendAdditionalRecords();
+        this.writeToCSV(this.recordObject);
     }
 
     displayRecordObject(){

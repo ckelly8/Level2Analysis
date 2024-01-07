@@ -32,6 +32,12 @@ ws.on('error', function error(error) {
 
 //record data after performing computations
 setInterval(() => {
+  // if orderbook grows extremely large, stop process. 
+  if(ob.OrderBookSizeCheck > 10){
+    console.log('Size out of bounds. Process exiting.')
+    process.exit();
+  }
+
   recordObject.record(ob);
   recordObject.displayRecordObject();
   //ob.displayOrderBook();

@@ -5,6 +5,8 @@ class OrderBook{
         this.asks = new Array();
         this.bids = new Array();
         this.ticker = {};
+        this.snapshotSize = null;
+        this.OrderBookSize = null;
     }
 
     //Expects incoming websocket data parsed into JSON format 
@@ -17,6 +19,8 @@ class OrderBook{
             this.bids = data.bids.map(row => {
                 return row.map(parseFloat);
             });
+            this.snapshotSize = this.asks.length + this.bids.length;
+            this.OrderBookSize = this.snapshotSize;
         }
         //Update orderbook 
         if (data.type == 'l2update'){
@@ -52,7 +56,7 @@ class OrderBook{
             }
         }
         
-        // Sorting updates as they are not guaranteed to be sorted already
+        // Sorting updates as they are not guaranteed to be in order
         quickSort2DArray(bidsUpdate);
         quickSort2DArray(asksUpdate);
 
@@ -171,6 +175,15 @@ class OrderBook{
         this.bids = newBids;
         this.asks = newAsks;
     
+    }
+
+    // returns the ratio of the current orderbook size to that of
+    // its initial snapshot. Purpose is to monitor for any extreme
+    // memory leaks.
+    OrderBookSizeCheck(){
+        let ratio = 1;
+        ratio = this.OrderBookSize / this.snapshotSize;
+        return ratio; 
     }
 
     //Display metrics about the orderbook

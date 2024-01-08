@@ -39,6 +39,6 @@ setInterval(() => {
   }
 
   recordObject.record(ob);
-  recordObject.displayRecordObject();
+  //recordObject.displayRecordObject();
   //ob.displayOrderBook();
 }, 1000);
